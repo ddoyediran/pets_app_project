@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const config = require("./utils/config");
+const ownerRouter = require("./controllers/owner");
 
 const app = express();
 
@@ -18,7 +19,9 @@ mongoose
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const port = app.get("/", (req, res) => {
+app.use("/api/owners", ownerRouter);
+
+app.get("/", (req, res) => {
   res.json({ message: "working" });
 });
 
