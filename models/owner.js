@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const ownerSchema = new mongoose.Schema({
   name: {
     type: String,
+    required: true,
   },
   // every owner should have an array called pets
   // which consists of a bunch of ids
@@ -17,4 +18,4 @@ const ownerSchema = new mongoose.Schema({
 });
 
 // export the schema
-module.export = mongoose.model("Owner", ownerSchema);
+module.exports = mongoose.model("Owner", ownerSchema);
