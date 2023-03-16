@@ -1,5 +1,6 @@
 const ownerRouter = require("express").Router();
 const Owner = require("../models/owner");
+const Pet = require("../models/pet");
 
 // List all owners
 ownerRouter.get("/", (req, res) => {
@@ -70,6 +71,47 @@ ownerRouter.delete("/:id", (req, res) => {
     })
     .catch((err) => {
       console.error(err);
+    });
+});
+
+ownerRouter("/:ownerId/pets", (req, res, next) => {
+  // create a new Pet based on request body
+  const newPet = new Pet(req.body);
+
+  // extract ownerId from route
+  const { ownerId } = req.params;
+  // set the pet's owner via route param
+  newPet.owner = ownerId;
+  // save the newPet
+  return newPet
+    .save()
+    .then((pet) => {
+      // update the owner's pets array
+      return Owner.findByIdAndUpdate(
+        ownerId,
+        /*
+         Add new pet's ObjectId (_id) to set of Owner.pets.
+         We use $addToSet instead of $push so we can ignore duplicates!
+        */
+
+        { $addToSet: { pets: pet._id } }
+      );
+    })
+    .then(() => {
+      return res.redirect(`/owners/${ownerId}/pets`);
+    })
+    .catch((err) => next(err));
+});
+
+ownerRouter.get("/:owner_id/pets", (req, res) => {
+  return Owner.findById(req.params.owner_id)
+    .populate("pets")
+    .exec()
+    .then((owner) => {
+      return res.render("pets/index", { owner });
+    })
+    .catch((err) => {
+      next(err);
     });
 });
 
