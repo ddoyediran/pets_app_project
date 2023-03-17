@@ -69,45 +69,49 @@ ownerRouter.delete("/:id", (req, res) => {
     });
 });
 
-// ownerRouter.post("/:ownerId/pets", (req, res, next) => {
-//   // create a new Pet based on request body
-//   const newPet = new Pet(req.body);
+// Create a pet for an owner when a form is submitted
+ownerRouter.post("/:ownerId/pets", (req, res, next) => {
+  // create a new Pet based on request body
+  const newPet = new Pet(req.body);
 
-//   // extract ownerId from route
-//   const { ownerId } = req.params;
-//   // set the pet's owner via route param
-//   newPet.owner = ownerId;
-//   // save the newPet
-//   return newPet
-//     .save()
-//     .then((pet) => {
-//       // update the owner's pets array
-//       return Owner.findByIdAndUpdate(
-//         ownerId,
-//         /*
-//          Add new pet's ObjectId (_id) to set of Owner.pets.
-//          We use $addToSet instead of $push so we can ignore duplicates!
-//         */
+  // extract ownerId from route
+  const { ownerId } = req.params;
+  // set the pet's owner via route param
+  newPet.owner = ownerId;
+  // save the newPet
+  return newPet
+    .save()
+    .then((pet) => {
+      // update the owner's pets array
+      return Owner.findByIdAndUpdate(
+        ownerId,
+        /*
+         Add new pet's ObjectId (_id) to set of Owner.pets.
+         We use $addToSet instead of $push so we can ignore duplicates!
+        */
 
-//         { $addToSet: { pets: pet._id } }
-//       );
-//     })
-//     .then(() => {
-//       return res.redirect(`/owners/${ownerId}/pets`);
-//     })
-//     .catch((err) => next(err));
-// });
+        { $addToSet: { pets: pet._id } }
+      );
+    })
+    .then(() => {
+      return res.redirect(`/owners/${ownerId}/pets`);
+      //return res.redirect(`/${ownerId}/pets`);
+    })
+    .catch((err) => next(err));
+});
 
-// ownerRouter.get("/:owner_id/pets", (req, res) => {
-//   return Owner.findById(req.params.owner_id)
-//     .populate("pets")
-//     .exec()
-//     .then((owner) => {
-//       return res.render("pets/index", { owner });
-//     })
-//     .catch((err) => {
-//       next(err);
-//     });
-// });
+// Display all pets for an owner
+ownerRouter.get("/:owner_id/pets", (req, res, next) => {
+  return Owner.findById(req.params.owner_id)
+    .populate("pets")
+    .exec()
+    .then((owner) => {
+      return res.status(200).json({ owner });
+      //return res.render("pets/index", { owner });
+    })
+    .catch((err) => {
+      next(err);
+    });
+});
 
 module.exports = ownerRouter;
