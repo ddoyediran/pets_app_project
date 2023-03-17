@@ -1,4 +1,4 @@
-const ownerRouter = require("express").Router();
+const ownerRouter = require("express").Router({ mergeParams: true });
 const Owner = require("../models/owner");
 const Pet = require("../models/pet");
 
@@ -33,7 +33,6 @@ ownerRouter.post("/", (req, res) => {
 
   const owner = new Owner({
     name: body.name,
-    pets: body.petsId,
   });
 
   owner
@@ -50,11 +49,7 @@ ownerRouter.post("/", (req, res) => {
 ownerRouter.patch("/:id", (req, res) => {
   const body = req.body;
 
-  Owner.findByIdAndUpdate(
-    req.params.id,
-    { name: body.name, pets: body.pets },
-    { new: true }
-  )
+  Owner.findByIdAndUpdate(req.params.id, { name: body.name }, { new: true })
     .then((updatedOwner) => {
       res.status(200).json({ updatedOwner });
     })
@@ -74,45 +69,45 @@ ownerRouter.delete("/:id", (req, res) => {
     });
 });
 
-ownerRouter("/:ownerId/pets", (req, res, next) => {
-  // create a new Pet based on request body
-  const newPet = new Pet(req.body);
+// ownerRouter.post("/:ownerId/pets", (req, res, next) => {
+//   // create a new Pet based on request body
+//   const newPet = new Pet(req.body);
 
-  // extract ownerId from route
-  const { ownerId } = req.params;
-  // set the pet's owner via route param
-  newPet.owner = ownerId;
-  // save the newPet
-  return newPet
-    .save()
-    .then((pet) => {
-      // update the owner's pets array
-      return Owner.findByIdAndUpdate(
-        ownerId,
-        /*
-         Add new pet's ObjectId (_id) to set of Owner.pets.
-         We use $addToSet instead of $push so we can ignore duplicates!
-        */
+//   // extract ownerId from route
+//   const { ownerId } = req.params;
+//   // set the pet's owner via route param
+//   newPet.owner = ownerId;
+//   // save the newPet
+//   return newPet
+//     .save()
+//     .then((pet) => {
+//       // update the owner's pets array
+//       return Owner.findByIdAndUpdate(
+//         ownerId,
+//         /*
+//          Add new pet's ObjectId (_id) to set of Owner.pets.
+//          We use $addToSet instead of $push so we can ignore duplicates!
+//         */
 
-        { $addToSet: { pets: pet._id } }
-      );
-    })
-    .then(() => {
-      return res.redirect(`/owners/${ownerId}/pets`);
-    })
-    .catch((err) => next(err));
-});
+//         { $addToSet: { pets: pet._id } }
+//       );
+//     })
+//     .then(() => {
+//       return res.redirect(`/owners/${ownerId}/pets`);
+//     })
+//     .catch((err) => next(err));
+// });
 
-ownerRouter.get("/:owner_id/pets", (req, res) => {
-  return Owner.findById(req.params.owner_id)
-    .populate("pets")
-    .exec()
-    .then((owner) => {
-      return res.render("pets/index", { owner });
-    })
-    .catch((err) => {
-      next(err);
-    });
-});
+// ownerRouter.get("/:owner_id/pets", (req, res) => {
+//   return Owner.findById(req.params.owner_id)
+//     .populate("pets")
+//     .exec()
+//     .then((owner) => {
+//       return res.render("pets/index", { owner });
+//     })
+//     .catch((err) => {
+//       next(err);
+//     });
+// });
 
 module.exports = ownerRouter;
