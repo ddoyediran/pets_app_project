@@ -114,4 +114,50 @@ ownerRouter.get("/:owner_id/pets", (req, res, next) => {
     });
 });
 
+//Display a single pet for an owner
+ownerRouter.get("/:owner_id/pets/:petId", (req, res, next) => {
+  // return Owner.find({ _id: req.params.owner_id, pets: req.params.petId })
+  //   .populate()
+  //   .exec()
+  //   .then((owner) => {
+  //     return res.status(200).json({ owner });
+  //   })
+  //   .catch((err) => {
+  //     next(err);
+  //   });
+
+  return Owner.findById(req.params.owner_id)
+    .populate()
+    .exec()
+    .then((owner) => {
+      console.log(owner);
+      //console.log(new ObjectId(req.params.petId));
+      // const singlePet = owner.pets.findById(req.params.petId);
+      // const singlePet = owner.pets.filter((pet) => {
+      //   return pet._id === ObjectId(req.params.petId);
+      //   // if (pet._id === req.params.petId) {
+      //   //   return pet;
+      //   // }
+      // });
+
+      for (let i = 0; i < owner.pets.length; i++) {
+        console.log("op", owner.pets[i]);
+        if (owner.pets[i] === req.params.petId) {
+          console.log(owner.pets[i]);
+          // return res.status(200).json({ owner.pets[i] })
+          return owner.pets[i];
+        }
+      }
+      // if (!singlePet) {
+      //   return res.status(404).json({ message: "Pet not found!" });
+      // }
+
+      // return res.status(200).json({ singlePet });
+      res.status(404).json({ message: "Pet not found!" });
+    })
+    .catch((err) => {
+      next(err);
+    });
+});
+
 module.exports = ownerRouter;
